@@ -1,0 +1,624 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 15px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* 標題列 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 15px 0;
+}
+
+.header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+}
+
+/* 控制面板 */
+.controls {
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    background-color: #1f1f1f;
+    border-radius: 6px;
+}
+
+.sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.sort-controls label {
+    font-size: 13px;
+    color: #b0b0b0;
+    white-space: nowrap;
+}
+
+.data-source-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #888;
+    flex-wrap: wrap;
+}
+
+#data-source-indicator {
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.refresh-btn {
+    padding: 4px 10px;
+    background-color: #333;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.refresh-btn:hover {
+    background-color: #3a3a3a;
+    border-color: #555;
+}
+
+.sort-btn {
+    padding: 6px 12px;
+    background-color: #333;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.sort-btn:hover {
+    background-color: #3a3a3a;
+    border-color: #555;
+}
+
+.sort-btn.active {
+    background-color: #ffd700;
+    border-color: #ffd700;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+/* Funds Sort Group */
+.funds-sort-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sort-select {
+    padding: 5px;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    outline: none;
+}
+
+.sort-select:focus {
+    border-color: #ffd700;
+}
+
+/* 熱力圖容器 */
+.treemap-container {
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    min-height: 600px;
+}
+
+#treemap {
+    width: 100%;
+    height: 600px;
+    position: relative;
+}
+
+.treemap-rect {
+    stroke: #0a0a0a;
+    stroke-width: 3;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.treemap-rect:hover {
+    opacity: 0.85;
+    stroke: #fff;
+    stroke-width: 4;
+    filter: brightness(1.1);
+}
+
+.treemap-label {
+    font-size: 15px;
+    font-weight: 700;
+    fill: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+/* Tooltip */
+.treemap-tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 1000;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    display: none;
+}
+
+.treemap-change,
+.treemap-value {
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    text-anchor: middle;
+}
+
+.treemap-change.positive {
+    fill: #ff6b6b;
+    /* 柔和的紅色 - 上漲 */
+}
+
+.treemap-change.negative {
+    fill: #51cf66;
+    /* 柔和的綠色 - 下跌 */
+}
+
+.treemap-change.neutral {
+    fill: #e0e0e0;
+}
+
+.treemap-value {
+    fill: #ddd;
+    /* Default light gray for value */
+    font-size: 12px;
+}
+
+.treemap-value.positive {
+    fill: #ff6b6b;
+    /* 柔和的紅色 - 資金流入 */
+}
+
+.treemap-value.negative {
+    fill: #51cf66;
+    /* 柔和的綠色 - 資金流出 */
+}
+
+/* 圖例 */
+.legend {
+    background-color: #1f1f1f;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.legend-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #b0b0b0;
+}
+
+#size-indicator {
+    color: #ffd700;
+    font-weight: 600;
+}
+
+.legend-colors {
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+}
+
+.color-scale {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.color-item {
+    padding: 6px 10px;
+    font-size: 11px;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+/* Detailed Info Panel */
+.detail-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    height: 80vh;
+    background-color: #212121;
+    border: 1px solid #444;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Price Info Display */
+.detail-price-info {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 15px;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333;
+}
+
+.current-price {
+    font-size: 28px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+.current-price.positive {
+    color: #ff5252;
+}
+
+.current-price.negative {
+    color: #4caf50;
+}
+
+.price-change {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.price-change.positive {
+    color: #ff5252;
+}
+
+.price-change.negative {
+    color: #4caf50;
+}
+
+/* K棒顯示 */
+.kbar-svg {
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.current-price {
+    display: flex;
+    align-items: center;
+}
+
+.detail-panel.hidden {
+    display: none;
+}
+
+.detail-header {
+    background-color: #333;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-bottom: 1px solid #444;
+}
+
+#detail-title {
+    margin: 0;
+    font-size: 20px;
+    color: #fff;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.detail-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 5px;
+}
+
+.stat-item {
+    font-size: 14px;
+    color: #ccc;
+    display: flex;
+    gap: 5px;
+}
+
+.stat-label {
+    color: #aaa;
+    width: 70px;
+}
+
+.stat-value {
+    font-weight: bold;
+}
+
+.stat-value.positive {
+    color: #ff5252;
+}
+
+.stat-value.negative {
+    color: #4caf50;
+}
+
+/* Scrollable Content */
+.detail-content {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #121212;
+    padding-bottom: 20px;
+}
+
+.scrollable {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Chart Container */
+.chart-container-custom {
+    background-color: #212121;
+    padding: 0;
+    margin-bottom: 10px;
+    height: 250px;
+    /* Fixed height for chart area */
+    position: relative;
+    border-bottom: 1px solid #333;
+}
+
+#chart-placeholder {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.stock-list-container {
+    background-color: #212121;
+    padding: 15px;
+    min-height: 300px;
+}
+
+.stock-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.stock-list-header h3 {
+    font-size: 16px;
+    color: #ccc;
+    margin: 0;
+    padding-left: 5px;
+    border-left: 3px solid #ffd700;
+}
+
+.stock-sort-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.stock-sort-select {
+    padding: 4px 8px;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+}
+
+.stock-sort-select:focus {
+    border-color: #ffd700;
+}
+
+.stock-sort-btn {
+    padding: 4px 10px;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    min-width: 32px;
+    transition: all 0.2s;
+}
+
+.stock-sort-btn:hover {
+    background-color: #3a3a3a;
+    border-color: #555;
+}
+
+.stock-list-container h3 {
+    font-size: 16px;
+    color: #ccc;
+    margin-bottom: 10px;
+    padding-left: 5px;
+    border-left: 3px solid #ffd700;
+}
+
+/* Stock Table Styles */
+.stock-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.stock-table th {
+    text-align: left;
+    color: #888;
+    font-weight: normal;
+    padding: 8px 4px;
+    border-bottom: 1px solid #333;
+}
+
+.stock-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.stock-table th.sortable:hover {
+    color: #ffd700;
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+.stock-table th.sortable.active {
+    color: #ffd700;
+    font-weight: 600;
+}
+
+.stock-table td {
+    padding: 10px 4px;
+    border-bottom: 1px solid #2a2a2a;
+    color: #fff;
+}
+
+.stock-table td:nth-child(3),
+.stock-table td:nth-child(4),
+.stock-table td:nth-child(5) {
+    text-align: right;
+}
+
+.stock-table th:nth-child(3),
+.stock-table th:nth-child(4),
+.stock-table th:nth-child(5) {
+    text-align: right;
+}
+
+.stock-table .positive {
+    color: #ff5252;
+}
+
+.stock-table .negative {
+    color: #4caf50;
+}
+
+.stock-table .neutral {
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-info {
+        padding: 0 5px 15px 5px;
+    }
+
+    .big-price {
+        font-size: 28px;
+    }
+
+    .sub-info-block {
+        font-size: 11px;
+    }
+    
+    .controls {
+        padding: 10px 12px;
+    }
+    
+    .sort-controls {
+        gap: 6px;
+    }
+    
+    .sort-controls label {
+        font-size: 12px;
+    }
+    
+    .sort-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+    
+    .sort-select {
+        padding: 4px;
+        font-size: 10px;
+    }
+    
+    .refresh-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+    
+    .legend {
+        padding: 12px 15px;
+    }
+    
+    .legend-text {
+        font-size: 12px;
+    }
+    
+    .color-item {
+        padding: 5px 8px;
+        font-size: 10px;
+    }
+}

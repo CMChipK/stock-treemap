@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股市族群熱力圖</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 標題列 -->
+        <header class="header">
+            <h1>類股輪動表現</h1>
+        </header>
+
+        <!-- 控制面板 -->
+        <div class="controls">
+            <div class="sort-controls">
+                <label>排序依據：</label>
+                <button id="sort-volume" class="sort-btn active">成交量</button>
+                <div class="funds-sort-group">
+                    <button id="sort-funds" class="sort-btn">資金流量</button>
+                    <select id="sort-funds-type" class="sort-select" style="display: none;">
+                        <option value="abs">絕對值</option>
+                        <option value="net-in">資金流入</option>
+                        <option value="net-out">資金流出</option>
+                    </select>
+                </div>
+            </div>
+            <div class="data-source-info">
+                <span id="data-source-indicator">載入中...</span>
+                <button id="refresh-data" class="refresh-btn">重新載入</button>
+            </div>
+        </div>
+
+        <!-- 熱力圖區域 -->
+        <div class="treemap-container">
+            <div id="treemap"></div>
+        </div>
+
+        <!-- 圖例 -->
+        <div class="legend">
+            <div class="legend-text">
+                <span>區塊面積越大表示<span id="size-indicator">成交量</span>越大</span>
+                <span>顏色越深表示漲跌幅越多</span>
+            </div>
+            <div class="legend-colors">
+                <div class="color-scale">
+                    <span class="color-item" style="background: #8b1a1a;">&gt;5%</span>
+                    <span class="color-item" style="background: #a03030;">2.5~5%</span>
+                    <span class="color-item" style="background: #c05050;">0~2.5%</span>
+                    <span class="color-item" style="background: #4a4a4a;">0%</span>
+                    <span class="color-item" style="background: #4a7a4a;">0~-2.5%</span>
+                    <span class="color-item" style="background: #2a5a2a;">-2.5~-5%</span>
+                    <span class="color-item" style="background: #1a4a1a;">&lt;-5%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 詳細資訊面板（點擊區塊後顯示） -->
+        <div id="detail-panel" class="detail-panel hidden">
+            <div class="detail-header">
+                <h2 id="detail-title"></h2>
+                <button id="close-detail" class="close-btn">×</button>
+            </div>
+            <div class="detail-content scrollable">
+                <div class="detail-price-info">
+                    <div class="current-price" id="current-price">--</div>
+                    <div class="price-change" id="price-change">--</div>
+                </div>
+                <div class="detail-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">漲跌幅</span>
+                        <span id="detail-change" class="stat-value"></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">資金流向</span>
+                        <span id="detail-funds" class="stat-value"></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">成交量</span>
+                        <span id="detail-volume" class="stat-value"></span>
+                    </div>
+                </div>
+
+                <div class="chart-container-custom">
+                    <h3>類股指數走勢</h3>
+                    <div id="chart-placeholder"></div>
+                </div>
+
+                <div class="stock-list-container">
+                    <h3>股票清單</h3>
+                    <div id="stock-list-placeholder">
+                        <p>股票清單區域（待實作）</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
