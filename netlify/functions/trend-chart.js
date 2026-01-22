@@ -17,10 +17,10 @@ async function getAccessToken() {
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
     params.append('login_method', 'email');
-    params.append('client_id', process.env.CMONEY_CLIENT_ID || 'cmchipkmobile');
-    params.append('client_secret', process.env.CMONEY_CLIENT_SECRET || '735c6defb9e33085f7bd8389');
-    params.append('account', process.env.CMONEY_ACCOUNT || 'jerry_yang@cmoney.com.tw');
-    params.append('password', process.env.CMONEY_PASSWORD || 'Jerry072577');
+    params.append('client_id', process.env.CMONEY_CLIENT_ID);
+    params.append('client_secret', process.env.CMONEY_CLIENT_SECRET);
+    params.append('account', process.env.CMONEY_ACCOUNT);
+    params.append('password', process.env.CMONEY_PASSWORD);
 
     const response = await fetch('https://www.cmoney.tw/identity/token', {
         method: 'POST',
