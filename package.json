@@ -1,25 +1,11 @@
 {
-  "name": "stock-treemap-proxy",
+  "name": "stock-treemap",
   "version": "1.0.0",
-  "description": "股市族群熱力圖 - API 代理伺服器",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
+  "description": "股市族群熱力圖",
   "dependencies": {
-    "express": "^4.18.2",
-    "node-fetch": "^2.7.0",
-    "cors": "^2.8.5"
+    "node-fetch": "^2.7.0"
   },
   "engines": {
-    "node": ">=14.0.0"
-  },
-  "keywords": [
-    "stock",
-    "treemap",
-    "proxy"
-  ],
-  "author": "",
-  "license": "ISC"
+    "node": ">=18.0.0"
+  }
 }
