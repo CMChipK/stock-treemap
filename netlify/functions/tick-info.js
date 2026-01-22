@@ -71,14 +71,22 @@ async function parseChipkResponse(response) {
     }
 }
 
-module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+exports.handler = async (event, context) => {
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            body: JSON.stringify({ error: 'Method not allowed' })
+        };
     }
 
     try {
-        const { stockCodes } = req.body;
-        if (!stockCodes) return res.status(400).json({ error: '缺少必要參數' });
+        const { stockCodes } = JSON.parse(event.body);
+        if (!stockCodes) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: '缺少必要參數' })
+            };
+        }
 
         const codesArray = Array.isArray(stockCodes) ? stockCodes : stockCodes.split(',');
         const token = await getAccessToken();
@@ -105,10 +113,17 @@ module.exports = async (req, res) => {
         });
 
         const data = await parseChipkResponse(response);
-        res.json({ success: true, data: data });
+        
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ success: true, data: data })
+        };
 
     } catch (error) {
         console.error('代理即時行情錯誤:', error);
-        res.status(500).json({ error: error.message });
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: error.message })
+        };
     }
 };

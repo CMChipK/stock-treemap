@@ -72,13 +72,16 @@ async function parseChipkResponse(response) {
     }
 }
 
-module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+exports.handler = async (event, context) => {
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            body: JSON.stringify({ error: 'Method not allowed' })
+        };
     }
 
     try {
-        const { requestBody } = req.body;
+        const { requestBody } = JSON.parse(event.body);
         const token = await getAccessToken();
 
         const apiUrl = 'https://asterisk-chipsapi.cmoney.tw/AdditionInformationRevisit/api/GetOtherQuery/FocusIndustryRankRequest/IEnumerable%3CFocusIndustry%3E';
@@ -100,10 +103,17 @@ module.exports = async (req, res) => {
         });
 
         const data = await parseChipkResponse(response);
-        res.json({ success: true, data: data });
+        
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ success: true, data: data })
+        };
 
     } catch (error) {
         console.error('代理錯誤:', error);
-        res.status(500).json({ error: '代理伺服器錯誤', message: error.message });
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: '代理伺服器錯誤', message: error.message })
+        };
     }
 };
