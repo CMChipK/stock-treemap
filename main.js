@@ -576,6 +576,55 @@ let currentSortBy = 'volume'; // 'volume' 或 'funds'
 let currentFundsSortType = 'abs'; // 'abs', 'net-in', 或 'net-out'
 let selectedCategory = null;
 let currentData = []; // 當前使用的資料
+let allIndustryData = []; // 儲存完整的產業資料（包含所有排序結果）
+
+// 處理產業點擊（統一入口）
+function handleIndustryClick(industryData) {
+    loadStockDetails(industryData.code, industryData.name);
+    updateDetailHeader(industryData);
+}
+
+// 渲染焦點股跑馬燈
+function renderFocusStocksMarquee(data) {
+    // 取得資金流入前10名的類股
+    const topIndustries = data
+        .filter(item => item.fundsFlow > 0 && item.focusStock) // 只要資金流入且有焦點股
+        .sort((a, b) => b.fundsFlow - a.fundsFlow)
+        .slice(0, 10);
+
+    const marqueeContent = document.getElementById('focus-stocks-content');
+    if (!marqueeContent) return;
+
+    // 創建焦點股項目（重複兩次以實現無縫輪播）
+    const items = topIndustries.map(industry => {
+        const changeClass = industry.changePercent >= 0 ? 'positive' : 'negative';
+        const changeSign = industry.changePercent >= 0 ? '+' : '';
+        
+        return `
+            <div class="focus-stock-item" data-industry-code="${industry.code}">
+                <span class="focus-stock-industry">${industry.name}</span>
+                <span class="focus-stock-code">${industry.focusStock}</span>
+                <span class="focus-stock-change ${changeClass}">${changeSign}${industry.changePercent.toFixed(2)}%</span>
+            </div>
+        `;
+    }).join('');
+
+    // 重複兩次以實現無縫輪播
+    marqueeContent.innerHTML = items + items;
+
+    // 添加點擊事件
+    const stockItems = marqueeContent.querySelectorAll('.focus-stock-item');
+    stockItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const industryCode = item.getAttribute('data-industry-code');
+            const industry = allIndustryData.find(d => d.code === industryCode);
+            if (industry) {
+                handleIndustryClick(industry);
+            }
+        });
+    });
+}
 
 // 初始化
 document.addEventListener('DOMContentLoaded', async () => {
@@ -588,15 +637,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const apiData = await fetchIndustryData();
     if (apiData && apiData.length > 0) {
         currentData = apiData;
+        allIndustryData = apiData; // 儲存完整資料
         indicator.textContent = `API 資料 (${apiData.length} 筆)`;
         console.log('使用 API 資料，共', apiData.length, '筆');
     } else {
         currentData = mockData;
+        allIndustryData = mockData;
         indicator.textContent = `假資料 (${mockData.length} 筆)`;
         console.log('使用假資料，共', mockData.length, '筆');
     }
 
     renderTreemap();
+    renderFocusStocksMarquee(allIndustryData); // 渲染焦點股跑馬燈
 });
 
 // 初始化事件監聽器
