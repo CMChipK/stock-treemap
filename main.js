@@ -10,6 +10,27 @@ const API_CONFIG = {
     }
 };
 
+// 股票名稱對照表
+let STOCK_NAMES = {};
+
+// 加載股票名稱對照表
+async function loadStockNames() {
+    try {
+        const response = await fetch('/stock-names.json');
+        if (response.ok) {
+            STOCK_NAMES = await response.json();
+            console.log('股票名稱對照表載入成功，共', Object.keys(STOCK_NAMES).length, '筆');
+        }
+    } catch (error) {
+        console.error('載入股票名稱對照表失敗:', error);
+    }
+}
+
+// 取得股票名稱
+function getStockName(code) {
+    return STOCK_NAMES[code] || code;
+}
+
 // 產業代碼對照表（從 CSV 檔案載入）
 const INDUSTRY_CODE_MAP = {
     // 從 CSV 檔案讀取的對照
@@ -262,9 +283,14 @@ function transformApiData(apiResponse, sortBy = 'volume', fundsSortType = 'abs')
         const volume = parseFloat(item[0]) / 100000000; // 轉換成億
         const fundsFlow = parseFloat(item[4]) / 100000000; // 欄位3 可能是資金流向，轉換成億
         const changePercent = parseFloat(item[5]); // 漲跌幅
-        const stockCode = item[6] ? String(item[6]) : ''; // 焦點個股
+        const stockCode = item[6] ? String(item[6]).trim() : ''; // 焦點個股
         const industryCode = item[8] || ''; // 產業代碼
         const industryName = getIndustryName(industryCode);
+
+        // Debug: 記錄焦點股資料
+        if (stockCode) {
+            console.log('產業:', industryName, '焦點股:', stockCode);
+        }
 
         // Debug: 記錄 IC-代工 和 ABF 的資料
         if (industryCode === 'C23020' || industryCode === 'C30021' ||
@@ -286,7 +312,8 @@ function transformApiData(apiResponse, sortBy = 'volume', fundsSortType = 'abs')
             changePercent: changePercent,
             fundsFlow: fundsFlow,
             volume: volume,
-            stocks: stockCode ? [stockCode] : []
+            stocks: stockCode ? [stockCode] : [],
+            focusStock: stockCode // 添加焦點股欄位
         };
     }).filter(item => item.volume > 0 && item.code >= 'C11010' && item.code <= 'C30028'); // 過濾掉成交量為 0 且不在範圍內的資料
 
@@ -321,7 +348,7 @@ function transformApiData(apiResponse, sortBy = 'volume', fundsSortType = 'abs')
 async function fetchIndustryData(sortBy = 'volume', fundsSortType = 'abs') {
     try {
         const requestBody = {
-            Json: JSON.stringify({ Type: 4371, Rank: 30 }),
+            Json: JSON.stringify({ Type: 4371, Rank: 100 }),
             AppId: 2,
             Processing: [],
             Guid: '74632858-753d-4ee9-a3d8-0e34b9164f76' // 可以動態產生
@@ -585,32 +612,88 @@ function handleIndustryClick(industryData) {
 }
 
 // 渲染焦點股跑馬燈
-function renderFocusStocksMarquee(data) {
-    // 取得資金流入前10名的類股
+async function renderFocusStocksMarquee(data) {
+    // 取資金流入（正值）且有焦點股的前10名
     const topIndustries = data
-        .filter(item => item.fundsFlow > 0 && item.focusStock) // 只要資金流入且有焦點股
-        .sort((a, b) => b.fundsFlow - a.fundsFlow)
+        .filter(item => {
+            const stockCode = item.focusStock ? String(item.focusStock).trim() : '';
+            // 只保留 4 位數的股票代碼，且資金流入 > 0
+            return /^\d{4}$/.test(stockCode) && item.fundsFlow > 0;
+        })
+        .sort((a, b) => b.fundsFlow - a.fundsFlow) // 按資金流入金額排序
         .slice(0, 10);
 
-    const marqueeContent = document.getElementById('focus-stocks-content');
-    if (!marqueeContent) return;
+    console.log('=== 焦點股資訊 ===');
+    console.log('符合條件的焦點股:', topIndustries.length);
+    console.log('詳細:', topIndustries.map(d => ({
+        name: d.name,
+        stock: d.focusStock,
+        fundsFlow: d.fundsFlow
+    })));
 
-    // 創建焦點股項目（重複兩次以實現無縫輪播）
+    const marqueeContent = document.getElementById('focus-stocks-content');
+    if (!marqueeContent || topIndustries.length === 0) return;
+
+    // 取得個股即時資訊
+    const stockCodes = topIndustries.map(item => item.focusStock).join(',');
+    console.log('呼叫 tick-info API，股票代碼:', stockCodes);
+    
+    let stocksInfoMap = new Map();
+    
+    try {
+        const response = await fetch('/api/tick-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stockCodes: stockCodes })
+        });
+        
+        console.log('tick-info 回應狀態:', response.status);
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('tick-info 成功，資料筆數:', result.data ? result.data.length : 0);
+            if (result.success && Array.isArray(result.data)) {
+                result.data.forEach(item => {
+                    const code = String(item[6]).trim();
+                    const changePercent = parseFloat(item[8]) || 0;
+                    stocksInfoMap.set(code, { changePercent });
+                    console.log(`股票 ${code} 漲跌幅: ${changePercent}%`);
+                });
+            }
+        } else {
+            const errorText = await response.text();
+            console.error('tick-info 錯誤:', errorText);
+        }
+    } catch (error) {
+        console.error('tick-info 例外:', error);
+    }
+
+    // 創建焦點股項目
     const items = topIndustries.map(industry => {
-        const changeClass = industry.changePercent >= 0 ? 'positive' : 'negative';
-        const changeSign = industry.changePercent >= 0 ? '+' : '';
+        const stockCode = industry.focusStock;
+        const stockName = getStockName(stockCode);
+        const stockInfo = stocksInfoMap.get(stockCode);
+        const changePercent = stockInfo ? stockInfo.changePercent : 0;
+        
+        console.log(`建立項目: ${stockName}(${stockCode}) ${changePercent}%`);
+        
+        const changeClass = changePercent >= 0 ? 'positive' : 'negative';
+        const changeSign = changePercent >= 0 ? '+' : '';
         
         return `
             <div class="focus-stock-item" data-industry-code="${industry.code}">
-                <span class="focus-stock-industry">${industry.name}</span>
-                <span class="focus-stock-code">${industry.focusStock}</span>
-                <span class="focus-stock-change ${changeClass}">${changeSign}${industry.changePercent.toFixed(2)}%</span>
+                <span class="focus-stock-name">${stockName}(${stockCode})</span>
+                <span class="focus-stock-change ${changeClass}">${changeSign}${changePercent.toFixed(2)}%</span>
             </div>
         `;
     }).join('');
+    
+    console.log('items HTML 長度:', items.length, 'items 內容:', items.substring(0, 300));
 
     // 重複兩次以實現無縫輪播
     marqueeContent.innerHTML = items + items;
+    
+    console.log('跑馬燈 innerHTML 設定完成，長度:', marqueeContent.innerHTML.length);
 
     // 添加點擊事件
     const stockItems = marqueeContent.querySelectorAll('.focus-stock-item');
@@ -629,6 +712,9 @@ function renderFocusStocksMarquee(data) {
 // 初始化
 document.addEventListener('DOMContentLoaded', async () => {
     initializeEventListeners();
+
+    // 載入股票名稱對照表
+    await loadStockNames();
 
     // 嘗試從 API 取得資料，失敗則使用假資料
     const indicator = document.getElementById('data-source-indicator');

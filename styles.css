@@ -62,10 +62,10 @@ body {
 }
 
 .marquee-content {
-    display: flex;
-    gap: 20px;
-    animation: marquee 30s linear infinite;
-    white-space: nowrap;
+    display: inline-flex;
+    gap: 12px;
+    animation: marquee 20s linear infinite;
+    will-change: transform;
 }
 
 .marquee-content:hover {
@@ -83,31 +83,31 @@ body {
 
 .focus-stock-item {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    background-color: #2a2a2a;
+    background: linear-gradient(135deg, #2d2d2d 0%, #252525 100%);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 1px solid transparent;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
 }
 
 .focus-stock-item:hover {
-    background-color: #353535;
+    background: linear-gradient(135deg, #353535 0%, #2d2d2d 100%);
     border-color: #ffd700;
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.2);
 }
 
-.focus-stock-industry {
-    font-size: 12px;
-    color: #999;
-}
-
-.focus-stock-code {
+.focus-stock-name {
     font-size: 14px;
     font-weight: 600;
     color: #fff;
+    margin-right: 4px;
 }
 
 .focus-stock-change {

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "股市族群熱力圖",
   "dependencies": {
+    "iconv-lite": "^0.7.2",
     "node-fetch": "^2.7.0"
   },
   "engines": {
